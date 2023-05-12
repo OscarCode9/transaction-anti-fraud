@@ -1,0 +1,54 @@
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { AppService } from './app.service';
+import { ClientKafka, MessagePattern, Payload } from '@nestjs/microservices';
+
+class KillDragonMessage {
+  dragonId: number;
+  name: string;
+  heroId: number;
+}
+
+@Controller()
+export class AppController {
+  constructor(
+    private readonly appService: AppService,
+    @Inject('any_name_i_want') private readonly client: ClientKafka,
+  ) {}
+
+  async onModuleInit() {
+    ['hero.kill.dragon'].forEach((key) => this.client.subscribeToResponseOf(`${key}`));
+    await this.client.connect();
+  }
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+
+  @MessagePattern('hero.kill.dragon')
+  killDragon(@Payload() message: KillDragonMessage): any {
+    console.log(message);
+    const realm = 'Nest';
+    const heroId = message.heroId;
+    const dragonId = message.dragonId;
+
+    const data = { realm, heroId, dragonId };
+    console.log(data);
+  }
+
+  @Post('/send')
+  public sendMessage(
+    @Body('dragonId') dragonId: number,
+    @Body('name') name: string,
+    @Body('heroId') heroId: number,
+  ) {
+    console.log('Here');
+    const killDragonMessage: KillDragonMessage = {
+      dragonId,
+      name,
+      heroId,
+    };
+    console.log(killDragonMessage);
+    this.client.emit('hero.kill.dragon', killDragonMessage);
+  }
+}
