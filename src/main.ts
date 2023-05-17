@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,11 +12,11 @@ async function bootstrap() {
         fromBeginning: true,
       },
       client: {
-        clientId: 'transactions',
-        brokers: ['localhost:9092'],
+        clientId: 'transactions-validate',
+        brokers: ['kafka:9092'],
       },
       consumer: {
-        groupId: 'transactions-validate-consumer',
+        groupId: 'transactions-validate-consumer-validate',
       },
     },
   });
@@ -25,4 +25,5 @@ async function bootstrap() {
 
   await app.listen(4000);
 }
+
 bootstrap();

@@ -16,39 +16,14 @@ export class AppController {
   ) {}
 
   async onModuleInit() {
-    ['hero.kill.dragon'].forEach((key) => this.client.subscribeToResponseOf(`${key}`));
+    ['transactions.created'].forEach((key) =>
+      this.client.subscribeToResponseOf(`${key}`),
+    );
     await this.client.connect();
   }
 
   @Get()
   getHello(): string {
     return this.appService.getHello();
-  }
-
-  @MessagePattern('hero.kill.dragon')
-  killDragon(@Payload() message: KillDragonMessage): any {
-    console.log(message);
-    const realm = 'Nest';
-    const heroId = message.heroId;
-    const dragonId = message.dragonId;
-
-    const data = { realm, heroId, dragonId };
-    console.log(data);
-  }
-
-  @Post('/send')
-  public sendMessage(
-    @Body('dragonId') dragonId: number,
-    @Body('name') name: string,
-    @Body('heroId') heroId: number,
-  ) {
-    console.log('Here');
-    const killDragonMessage: KillDragonMessage = {
-      dragonId,
-      name,
-      heroId,
-    };
-    console.log(killDragonMessage);
-    this.client.emit('hero.kill.dragon', killDragonMessage);
   }
 }
